@@ -1,8 +1,8 @@
 (ns dribbble-stats.utils)
 
-(defn calc-timeout [limit-reset]
-  (+ 1000 (- (* 1000 (bigdec limit-reset))
-             (System/currentTimeMillis))))
+(defn calc-timeout [delay-ms limit-reset]
+  (+ delay-ms (- (* 1000 (bigdec limit-reset))
+                 (System/currentTimeMillis))))
 
 (defn sort-by-followers [users user-ids]
   (sort-by

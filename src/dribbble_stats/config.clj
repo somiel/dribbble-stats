@@ -1,7 +1,7 @@
 (ns dribbble-stats.config)
 
-(def api-key "e84f1d3f7bd4c6476b4f63d2ff9ad6c2ba95dfe73c5373db788c32366c7bffc3")
-
+(def api-key "a800f46b3df8f5f2e5a9ffd2e2d8282f7e48468d715b75af8cbc2d15ae5cbebb")
+(def api-timeout 1000)
 (def root-url "https://api.dribbble.com/v1/")
 
 (defn user-url [identity]
@@ -9,4 +9,4 @@
 
 (def request-params {:throw-exceptions false
                      :as :json
-                     :query-params {:access_token api-key}})
+                     :query-params {:access_token api-key :per_page 100}})

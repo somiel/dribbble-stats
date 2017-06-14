@@ -5,6 +5,8 @@
             [dribbble-stats.utils :as u]
             [clojure.string :as str :refer [blank?]]))
 
+(def save-point (atom {:url nil}))
+
 (defn- fetch [url]
   (loop [url url, data nil]
     (if-not (blank? url)
@@ -13,12 +15,15 @@
         (cond
           (= (:status response-data) 200)
           (do
-            (recur (:next-page-url response-data)
-                   (u/acc-response-data data
-                     (json/read-str (:body response)))))
+            (let [next-page-url (:next-page-url response-data)]
+              (when-not (nil? next-page-url)
+                (swap! save-point #(assoc % :url next-page-url)))
+              (recur next-page-url
+                     (u/acc-response-data data
+                       (json/read-str (:body response))))))
           (= (:status response-data) 429)
           (do
-            (Thread/sleep (u/calc-timeout (:limit-reset response-data)))
+            (Thread/sleep (u/calc-timeout cfg/api-timeout (:limit-reset response-data)))
             (recur url data))))
       data)))
 
