@@ -1,26 +1,23 @@
 (ns dribbble-stats.fetchers
   (:require [clj-http.client :as http]
-            [clojure.data.json :as json]
             [dribbble-stats.config :as cfg]
             [dribbble-stats.utils :as u]
             [clojure.string :as str :refer [blank?]]))
 
-(def save-point (atom {:url nil}))
+(def cached-data (atom []))
 
 (defn- fetch [url]
   (loop [url url, data nil]
     (if-not (blank? url)
       (let [response (http/get url cfg/request-params)
-            response-data (u/parse-response response)]
+            response-data (u/parse-response response)
+            response-json (:body-json response-data)]
         (cond
           (= (:status response-data) 200)
           (do
-            (let [next-page-url (:next-page-url response-data)]
-              (when-not (nil? next-page-url)
-                (swap! save-point #(assoc % :url next-page-url)))
-              (recur next-page-url
-                     (u/acc-response-data data
-                       (json/read-str (:body response))))))
+            (u/make-caching cached-data url response-json)
+            (recur (:next-page-url response-data)
+                   (u/acc-response-data data response-json)))
           (= (:status response-data) 429)
           (do
             (Thread/sleep (u/calc-timeout cfg/api-timeout (:limit-reset response-data)))

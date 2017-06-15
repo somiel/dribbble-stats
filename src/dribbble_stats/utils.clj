@@ -1,4 +1,5 @@
-(ns dribbble-stats.utils)
+(ns dribbble-stats.utils
+  (:require [clojure.data.json :as json]))
 
 (defn calc-timeout [delay-ms limit-reset]
   (+ delay-ms (- (* 1000 (bigdec limit-reset))
@@ -31,4 +32,8 @@
 (defn parse-response [response]
   {:status (get response :status)
    :next-page-url (get-in response [:links :next :href])
-   :limit-reset (get-in response [:headers :X-RateLimit-Reset])})
+   :limit-reset (get-in response [:headers :X-RateLimit-Reset])
+   :body-json (json/read-str (:body response))})
+
+(defn make-caching [cache url data]
+  (swap! cache #(conj % (assoc {} :url url :data data))))
